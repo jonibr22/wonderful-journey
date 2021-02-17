@@ -32,15 +32,19 @@ class BlogController extends Controller
         ]);
         $user = Auth::user();
         if ($request->file()) {
-            $filename = $request->file->getClientOriginalName();
-            $request->file('file')->move('uploads', $filename, 'public');
-            Article::create([
+            $ext = $request->file->extension();
+            $article = Article::create([
                 'title' => $request->title,
                 'category_id' => $request->category,
                 'user_id' => $user->id,
                 'description' => $request->story,
-                'image' => $filename
+                'image' => ''
             ]);
+            $filename = ($article->id).'.'.$ext;
+            $request->file('file')->move('uploads', $filename, 'public');
+
+            Article::find($article->id)->update(['image'=>$filename]);            
+
             return redirect()->route('blog')->with('success','The article was successfully published');
         }
         return redirect()->route('blog.create')->with('failed','An error has occured');
